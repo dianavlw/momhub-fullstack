@@ -1,16 +1,12 @@
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
-from dotenv import load_dotenv
-import os
 
-from db import Base, engine, get_db
+from db import Base, engine, get_db, DATABASE_URL
 from models import Post
 from schemas import PostCreate, PostOut
 
-load_dotenv()
-
-# Create tables on startup (fine for now; later we’ll use migrations)
+# Create tables on startup (fine for now; later use migrations)
 Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
@@ -25,7 +21,7 @@ app.add_middleware(
 
 @app.get("/health")
 def health():
-    return {"status": "ok", "database_url_loaded": bool(os.getenv("DATABASE_URL"))}
+    return {"status": "ok", "database_url_loaded": bool(DATABASE_URL)}
 
 @app.get("/posts", response_model=list[PostOut])
 def list_posts(db: Session = Depends(get_db)):
