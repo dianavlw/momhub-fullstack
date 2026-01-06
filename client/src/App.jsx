@@ -1,54 +1,42 @@
-import { useEffect, useState } from 'react';
-import { getPosts, createPost, deletePost } from './api';
+import { Routes, Route, Navigate, Link } from 'react-router-dom';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import HomeFeed from './pages/HomeFeed';
+import { getToken } from './api';
 
-function App() {
-  const [posts, setPosts] = useState([]);
-  const [text, setText] = useState('');
-
-  async function load() {
-    const data = await getPosts();
-    setPosts(data);
-  }
-
-  async function onSubmit(e) {
-    e.preventDefault();
-    await createPost(text);
-    setText('');
-    load();
-  }
-
-  async function onDelete(id) {
-    await deletePost(id);
-    load();
-  }
-
-  useEffect(() => {
-    load();
-  }, []);
+export default function App() {
+  const token = getToken();
 
   return (
-    <div style={{ maxWidth: 600, margin: '40px auto' }}>
-      <h1>Momhub</h1>
+    <>
+      <nav
+        style={{
+          padding: 12,
+          display: 'flex',
+          gap: 12,
+          fontFamily: 'system-ui',
+        }}
+      >
+        <Link to='/'>Home</Link>
+        {!token && <Link to='/login'>Login</Link>}
+        {!token && <Link to='/signup'>Signup</Link>}
+      </nav>
 
-      <form onSubmit={onSubmit}>
-        <input
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          placeholder='Write a post...'
+      <Routes>
+        {/* homefeed is / */}
+        <Route
+          path='/'
+          element={token ? <HomeFeed /> : <Navigate to='/login' />}
         />
-        <button>Post</button>
-      </form>
-
-      <ul>
-        {posts.map((p) => (
-          <li key={p.id}>
-            {p.text}
-            <button onClick={() => onDelete(p.id)}>Delete</button>
-          </li>
-        ))}
-      </ul>
-    </div>
+        <Route
+          path='/login'
+          element={token ? <Navigate to='/' /> : <Login />}
+        />
+        <Route
+          path='/signup'
+          element={token ? <Navigate to='/' /> : <Signup />}
+        />
+      </Routes>
+    </>
   );
 }
-
-export default App;
